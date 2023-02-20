@@ -18,7 +18,7 @@ class SoldNft(Base):
     __tablename__ = 'sold_nfts'
 
     id = Column(Integer, primary_key=True)
-    nft_id = Column(Integer, ForeignKey('nfts.id'), nullable=False)
+    nft_id = Column(Integer, nullable=False)
     purchase_price = Column(Numeric(10,2))
     sale_price = Column(Numeric(10,2))
     sale_date = Column(Date)
@@ -56,6 +56,16 @@ def add_nft(session, project, purchase_price, purchase_date):
     session.commit()
     return nft.id
 
+def sell_nft(session, nft_id, sale_price, sale_date):
+    nft = session.query(Nft).filter(Nft.id == nft_id).first()
+    if not nft:
+        raise ValueError(f'NFT with id {nft_id} not found.')
+    
+    sold_nft = SoldNft(nft_id = nft_id, purchase_price = nft.purchase_price, sale_price = sale_price, sale_date = sale_date)
+    session.add(sold_nft)
+    session.delete(nft)
+    session.commit()
+    return sold_nft.id 
 
 def main():
     engine = get_engine_from_settings()
@@ -65,7 +75,8 @@ def main():
     if not inspector.has_table(Nft.__tablename__) or not inspector.has_table(SoldNft.__tablename__):
         Base.metadata.create_all(engine)
 
-    add_nft(session, 'TEST', 150, '2023-02-23')
+    # add_nft(session, 'TEST', 150, '2023-02-23')
+    # sell_nft(session, 1, 150, '2023-02-20')
 
 if __name__ == '__main__':
     main()
