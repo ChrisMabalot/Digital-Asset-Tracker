@@ -24,6 +24,7 @@ class SoldNft(Base):
     purchase_price = Column(Numeric(10,2))
     sale_price = Column(Numeric(10,2))
     sale_date = Column(Date)
+    net_return = Column(Numeric(10,2))
 
 def get_engine(user, passwd, host, port, db):
     url = f"postgresql://{user}:{passwd}@{host}:{port}/{db}"
@@ -63,7 +64,7 @@ def sell_nft(session, nft_id, sale_price, sale_date):
     if not nft:
         raise ValueError(f'NFT with id {nft_id} not found.')
     
-    sold_nft = SoldNft(id = nft_id, project = nft.project, asset = nft.asset, purchase_price = nft.purchase_price, sale_price = sale_price, sale_date = sale_date)
+    sold_nft = SoldNft(id = nft_id, project = nft.project, asset = nft.asset, purchase_price = nft.purchase_price, sale_price = sale_price, sale_date = sale_date, net_return = (sale_price-nft.purchase_price))
     session.add(sold_nft)
     session.delete(nft)
     session.commit()
@@ -78,7 +79,7 @@ def main():
         Base.metadata.create_all(engine)
 
     # add_nft(session, 'TEST2', 'ASSET_TEST2', 150, '2023-02-23')
-    # sell_nft(session, 2, 150, '2023-02-20')
+    # sell_nft(session, 1, 150, '2023-02-20')
 
 if __name__ == '__main__':
     main()
