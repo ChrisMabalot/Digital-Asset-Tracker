@@ -11,7 +11,7 @@ class Nft(Base):
 
     id = Column(Integer, primary_key=True)
     project = Column(String(255), nullable=False)
-    purchase_price = Column=(Numeric(10,2))
+    purchase_price = Column(Numeric(10,2))
     purchase_date = Column(Date)
 
 class SoldNft(Base):
@@ -22,3 +22,32 @@ class SoldNft(Base):
     purchase_price = Column(Numeric(10,2))
     sale_price = Column(Numeric(10,2))
     sale_date = Column(Date)
+
+def get_engine(user, passwd, host, port, db):
+    url = f"postgresql://{user}:{passwd}@{host}:{port}/{db}"
+    if not database_exists(url):
+        create_database(url)
+        print('New Database created.')
+    engine = create_engine(url, pool_size=50, echo=False)
+    print('Database successfully found.')
+    return engine
+
+def get_engine_from_settings():
+    keys = ['pguser', 'pgpasswd', 'pghost', 'pgport', 'pgdb']
+    if not all (key in keys for key in settings.keys()):
+        raise Exception('Bad config')
+
+    return get_engine(
+    settings['pguser'],
+    settings['pgpasswd'],
+    settings['pghost'],
+    settings['pgport'],
+    settings['pgdb']
+    )
+
+def main():
+    engine = get_engine_from_settings()
+    print(engine.url)
+
+if __name__ == '__main__':
+    main()
