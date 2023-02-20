@@ -45,9 +45,14 @@ def get_engine_from_settings():
     settings['pgdb']
     )
 
+def get_session():
+    engine = get_engine_from_settings()
+    session = sessionmaker(bind = engine)()
+    return session
+
 def main():
     engine = get_engine_from_settings()
-    print(engine.url)
+    session = get_session
 
 if __name__ == '__main__':
     main()
