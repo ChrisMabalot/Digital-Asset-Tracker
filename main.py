@@ -4,6 +4,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database
 from local_settings import postgresql as settings
 
+import plotly.express as ps
+
 Base = declarative_base()
 
 class Nft(Base):
@@ -80,6 +82,25 @@ def main():
 
     # add_nft(session, 'TEST2', 'ASSET_TEST2', 150, '2023-02-23')
     # sell_nft(session, 1, 150, '2023-02-20')
+
+    nfts = session.query(Nft).all()
+    sold_nfts = session.query(SoldNft).all()
+
+    if len(nfts):
+        print("Held NFT's:")
+        for nft in nfts:
+            print(nft.purchase_date, nft.project, nft.asset, nft.purchase_price)
+            print('')
+    else:
+        print("No NFT's currently held.")
+        print('')
+    
+    if len(sold_nfts):
+        print("Sold NFT's")
+        for nft in sold_nfts:
+            print(nft.sale_date, nft.project, nft.asset, nft.purchase_price, nft.sale_price, nft.net_return)
+    else:
+        print("No NFT's have been sold.")
 
 if __name__ == '__main__':
     main()
