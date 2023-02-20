@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Date, DateTime, Float, ForeignKey, Integer, String, Numeric
+from sqlalchemy import create_engine, Column, Date, DateTime, Float, ForeignKey, Integer, String, Numeric, inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database
@@ -50,9 +50,22 @@ def get_session():
     session = sessionmaker(bind = engine)()
     return session
 
+def add_nft(session, project, purchase_price, purchase_date):
+    nft = Nft(project = project, purchase_price = purchase_price, purchase_date = purchase_date)
+    session.add(nft)
+    session.commit()
+    return nft.id
+
+
 def main():
     engine = get_engine_from_settings()
-    session = get_session
+    session = get_session()
+
+    inspector = inspect(engine)
+    if not inspector.has_table(Nft.__tablename__) or not inspector.has_table(SoldNft.__tablename__):
+        Base.metadata.create_all(engine)
+
+    add_nft(session, 'TEST', 150, '2023-02-23')
 
 if __name__ == '__main__':
     main()
