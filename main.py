@@ -13,3 +13,12 @@ class Nft(Base):
     project = Column(String(255), nullable=False)
     purchase_price = Column=(Numeric(10,2))
     purchase_date = Column(Date)
+
+class SoldNft(Base):
+    __tablename__ = 'sold_nfts'
+
+    id = Column(Integer, primary_key=True)
+    nft_id = Column(Integer, ForeignKey('nfts.id'), nullable=False)
+    purchase_price = Column(Numeric(10,2))
+    sale_price = Column(Numeric(10,2))
+    sale_date = Column(Date)
