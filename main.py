@@ -11,6 +11,7 @@ class Nft(Base):
 
     id = Column(Integer, primary_key=True)
     project = Column(String(255), nullable=False)
+    asset = Column(String(255), nullable=False)
     purchase_price = Column(Numeric(10,2))
     purchase_date = Column(Date)
 
@@ -18,7 +19,8 @@ class SoldNft(Base):
     __tablename__ = 'sold_nfts'
 
     id = Column(Integer, primary_key=True)
-    nft_id = Column(Integer, nullable=False)
+    project = Column(String(255), nullable=False)
+    asset = Column(String(255), nullable=False)
     purchase_price = Column(Numeric(10,2))
     sale_price = Column(Numeric(10,2))
     sale_date = Column(Date)
@@ -50,8 +52,8 @@ def get_session():
     session = sessionmaker(bind = engine)()
     return session
 
-def add_nft(session, project, purchase_price, purchase_date):
-    nft = Nft(project = project, purchase_price = purchase_price, purchase_date = purchase_date)
+def add_nft(session, project, asset, purchase_price, purchase_date):
+    nft = Nft(project = project, asset = asset, purchase_price = purchase_price, purchase_date = purchase_date)
     session.add(nft)
     session.commit()
     return nft.id
@@ -61,7 +63,7 @@ def sell_nft(session, nft_id, sale_price, sale_date):
     if not nft:
         raise ValueError(f'NFT with id {nft_id} not found.')
     
-    sold_nft = SoldNft(nft_id = nft_id, purchase_price = nft.purchase_price, sale_price = sale_price, sale_date = sale_date)
+    sold_nft = SoldNft(id = nft_id, project = nft.project, asset = nft.asset, purchase_price = nft.purchase_price, sale_price = sale_price, sale_date = sale_date)
     session.add(sold_nft)
     session.delete(nft)
     session.commit()
@@ -75,8 +77,8 @@ def main():
     if not inspector.has_table(Nft.__tablename__) or not inspector.has_table(SoldNft.__tablename__):
         Base.metadata.create_all(engine)
 
-    # add_nft(session, 'TEST', 150, '2023-02-23')
-    # sell_nft(session, 1, 150, '2023-02-20')
+    # add_nft(session, 'TEST2', 'ASSET_TEST2', 150, '2023-02-23')
+    # sell_nft(session, 2, 150, '2023-02-20')
 
 if __name__ == '__main__':
     main()
