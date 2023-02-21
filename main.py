@@ -77,17 +77,17 @@ def main():
     if not inspector.has_table(Asset.__tablename__) or not inspector.has_table(Transaction.__tablename__):
         Base.metadata.create_all(engine)
 
-    add_asset(session, 'Project1', 'Asset1')
-    add_asset(session, 'Project1', 'Asset2')
-    add_asset(session, 'Project2', 'Asset1')
-    add_asset(session, 'Project3', 'Asset1')
+    # add_asset(session, 'Project1', 'Asset1')
+    # add_asset(session, 'Project1', 'Asset2')
+    # add_asset(session, 'Project2', 'Asset1')
+    # add_asset(session, 'Project3', 'Asset1')
     
-    add_transaction(session, 1, 100, '2023-1-20', 'Buy')
-    add_transaction(session, 1, 300, '2023-1-25', 'Sell')
-    add_transaction(session, 2, 150, '2023-1-26', 'Buy')
-    add_transaction(session, 3, 50, '2023-1-26', 'Buy')
-    add_transaction(session, 4, 10.5, '2023-1-26', 'Buy')
-    add_transaction(session, 4, 173, '2023-2-10', 'Sell')
+    # add_transaction(session, 1, 100, '2023-1-20', 'Buy')
+    # add_transaction(session, 1, 300, '2023-1-25', 'Sell')
+    # add_transaction(session, 2, 150, '2023-1-26', 'Buy')
+    # add_transaction(session, 3, 50, '2023-1-26', 'Buy')
+    # add_transaction(session, 4, 10.5, '2023-1-26', 'Buy')
+    # add_transaction(session, 4, 173, '2023-2-10', 'Sell')
 
 
     # conn = engine.connect()
@@ -103,6 +103,28 @@ def main():
 
     # conn.close
 
+    conn = engine.connect()
+
+    transactions_query = conn.execute(text('SELECT price, date, type FROM transactions ORDER BY date ASC')).fetchall()
+    transactions_df = pd.DataFrame(transactions_query, columns=['price', 'date', 'type'])
+    print(transactions_df.head(10))
+
+    balance = 1000 # Initialisation of the starting balance.
+
+    updated_balances = []
+    for date, group in transactions_df.groupby('date'):
+        for _, row in group.iterrows():
+            if row['type'] == 'Buy':
+                balance -= row['price']
+            elif row['type'] == 'Sell':
+                balance += row['price']
+        updated_balances.append(balance)
+
+    balanced_df = pd.DataFrame({'date': transactions_df['date'].unique(), 'balance': updated_balances})
+    print(balanced_df)
+
+    conn.close
+
     # test_starting_balance = 1000
     # total_spent = nfts_df['purchase_price'].sum() + sold_nfts_df['purchase_price'].sum()
     # total_received = sold_nfts_df['sale_price'].sum()
@@ -115,6 +137,8 @@ def main():
 
     # merged_df = pd.merge(nfts_df, sold_nfts_df, how='outer', on=['id', 'project', 'asset', 'purchase_price', 'purchase_date']).sort_values(by='id', ascending=True)
     # print(merged_df.head())
+
+
 
 if __name__ == '__main__':
     main()
