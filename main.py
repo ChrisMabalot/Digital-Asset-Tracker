@@ -80,13 +80,13 @@ def main():
     if not inspector.has_table(Nft.__tablename__) or not inspector.has_table(SoldNft.__tablename__):
         Base.metadata.create_all(engine)
 
-    # add_nft(session, 'TEST1', 'ASSET_TEST1', 150, '2023-02-23')
-    # add_nft(session, 'TEST2', 'ASSET_TEST2', 250, '2023-02-23')
-    # add_nft(session, 'TEST3', 'ASSET_TEST3', 50, '2023-02-23')
+    # add_nft(session, 'TEST1', 'ASSET_TEST1', 150, '2023-01-05')
+    # add_nft(session, 'TEST2', 'ASSET_TEST2', 250, '2023-02-2')
+    # add_nft(session, 'TEST3', 'ASSET_TEST3', 50, '2023-02-20')
     # add_nft(session, 'TEST4', 'ASSET_TEST4', 50.5, '2023-02-23')
     
-    # sell_nft(session, 1, 300, '2023-02-20')
-    # sell_nft(session, 3, 25, '2023-02-20')
+    # sell_nft(session, 1, 300, '2023-02-21')
+    # sell_nft(session, 3, 25, '2023-02-23')
 
     conn = engine.connect()
 
@@ -101,7 +101,15 @@ def main():
 
     conn.close
 
-    
+    test_starting_balance = 1000
+    total_spent = nfts_df['purchase_price'].sum() + sold_nfts_df['purchase_price'].sum()
+    total_received = sold_nfts_df['sale_price'].sum()
+    net_returns = sold_nfts_df['net_return'].sum()
+
+    print(f'Total Spent: {total_spent}')
+    print(f'Net Return: {net_returns}') 
+    print(f'Current P/L: {total_received - total_spent}')
+    print(f'Current Balance: {test_starting_balance - total_spent + total_received}')
 
 if __name__ == '__main__':
     main()
