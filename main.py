@@ -1,11 +1,10 @@
 from sqlalchemy import create_engine, Column, Date, DateTime, Float, ForeignKey, Integer, String, Numeric, inspect, text
-# from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy_utils import database_exists, create_database
 from local_settings import postgresql as settings
 
 import pandas as pd
-import plotly.express as ps
+import plotly.express as px
 
 Base = declarative_base()
 
@@ -89,20 +88,6 @@ def main():
     # add_transaction(session, 4, 10.5, '2023-1-26', 'Buy')
     # add_transaction(session, 4, 173, '2023-2-10', 'Sell')
 
-
-    # conn = engine.connect()
-
-    # nfts_result = conn.execute(text('SELECT * FROM nfts;')).fetchall()
-    # sold_nfts_result = conn.execute(text('SELECT * FROM sold_nfts;')).fetchall()
-
-    # nfts_df = pd.DataFrame(nfts_result, columns=['id', 'project', 'asset', 'purchase_price', 'purchase_date'])
-    # sold_nfts_df = pd.DataFrame(sold_nfts_result, columns=['id', 'project', 'asset', 'purchase_date','purchase_price', 'sale_price', 'sale_date', 'net_return'])
-    
-    # print(nfts_df.head())
-    # print(sold_nfts_df.head())
-
-    # conn.close
-
     conn = engine.connect()
 
     transactions_query = conn.execute(text('SELECT price, date, type FROM transactions ORDER BY date ASC')).fetchall()
@@ -123,20 +108,10 @@ def main():
     balanced_df = pd.DataFrame({'date': transactions_df['date'].unique(), 'balance': updated_balances})
     print(balanced_df)
 
+    fig = px.line(balanced_df, x='date', y='balance', range_x=(balanced_df['date'].min(), pd.Timestamp.now()))
+    fig.show()
+
     conn.close
-
-    # test_starting_balance = 1000
-    # total_spent = nfts_df['purchase_price'].sum() + sold_nfts_df['purchase_price'].sum()
-    # total_received = sold_nfts_df['sale_price'].sum()
-    # net_returns = sold_nfts_df['net_return'].sum()
-
-    # print(f'Total Spent: {total_spent}')
-    # print(f'Net Return: {net_returns}') 
-    # print(f'Current P/L: {total_received - total_spent}')
-    # print(f'Current Balance: {test_starting_balance - total_spent + total_received}')
-
-    # merged_df = pd.merge(nfts_df, sold_nfts_df, how='outer', on=['id', 'project', 'asset', 'purchase_price', 'purchase_date']).sort_values(by='id', ascending=True)
-    # print(merged_df.head())
 
 
 
