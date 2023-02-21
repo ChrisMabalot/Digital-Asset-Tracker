@@ -1,0 +1,7 @@
+sqlalchemy==2.0.3
+psycopg2-binary==2.9.5
+flask-sqlalchemy==3.0.3
+SQLAlchemy-Utils==0.40.0
+numpy==1.24.2
+pandas==1.5.3
+plotly==5.13.0
