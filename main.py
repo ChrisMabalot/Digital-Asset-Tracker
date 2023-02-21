@@ -25,6 +25,7 @@ class SoldNft(Base):
     project = Column(String(255), nullable=False)
     asset = Column(String(255), nullable=False)
     purchase_price = Column(Numeric(10,2))
+    purchase_date = Column(Date)
     sale_price = Column(Numeric(10,2))
     sale_date = Column(Date)
     net_return = Column(Numeric(10,2))
@@ -66,7 +67,7 @@ def sell_nft(session, nft_id, sale_price, sale_date):
     if not nft:
         raise ValueError(f'NFT with id {nft_id} not found.')
     
-    sold_nft = SoldNft(id = nft_id, project = nft.project, asset = nft.asset, purchase_price = nft.purchase_price, sale_price = sale_price, sale_date = sale_date, net_return = (sale_price-nft.purchase_price))
+    sold_nft = SoldNft(id = nft_id, project = nft.project, asset = nft.asset, purchase_date = nft.purchase_date, purchase_price = nft.purchase_price, sale_price = sale_price, sale_date = sale_date, net_return = (sale_price-nft.purchase_price))
     session.add(sold_nft)
     session.delete(nft)
     session.commit()
@@ -94,22 +95,25 @@ def main():
     sold_nfts_result = conn.execute(text('SELECT * FROM sold_nfts;')).fetchall()
 
     nfts_df = pd.DataFrame(nfts_result, columns=['id', 'project', 'asset', 'purchase_price', 'purchase_date'])
-    sold_nfts_df = pd.DataFrame(sold_nfts_result, columns=['id', 'project', 'asset', 'purchase_price', 'sale_price', 'sale_date', 'net_return'])
+    sold_nfts_df = pd.DataFrame(sold_nfts_result, columns=['id', 'project', 'asset', 'purchase_date','purchase_price', 'sale_price', 'sale_date', 'net_return'])
     
     print(nfts_df.head())
     print(sold_nfts_df.head())
 
     conn.close
 
-    test_starting_balance = 1000
-    total_spent = nfts_df['purchase_price'].sum() + sold_nfts_df['purchase_price'].sum()
-    total_received = sold_nfts_df['sale_price'].sum()
-    net_returns = sold_nfts_df['net_return'].sum()
+    # test_starting_balance = 1000
+    # total_spent = nfts_df['purchase_price'].sum() + sold_nfts_df['purchase_price'].sum()
+    # total_received = sold_nfts_df['sale_price'].sum()
+    # net_returns = sold_nfts_df['net_return'].sum()
 
-    print(f'Total Spent: {total_spent}')
-    print(f'Net Return: {net_returns}') 
-    print(f'Current P/L: {total_received - total_spent}')
-    print(f'Current Balance: {test_starting_balance - total_spent + total_received}')
+    # print(f'Total Spent: {total_spent}')
+    # print(f'Net Return: {net_returns}') 
+    # print(f'Current P/L: {total_received - total_spent}')
+    # print(f'Current Balance: {test_starting_balance - total_spent + total_received}')
+
+    merged_df = pd.merge(nfts_df, sold_nfts_df, how='outer', on=['id', 'project', 'asset', 'purchase_price', 'purchase_date']).sort_values(by='id', ascending=True)
+    print(merged_df.head())
 
 if __name__ == '__main__':
     main()
