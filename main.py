@@ -92,11 +92,14 @@ def main():
 
     transactions_query = conn.execute(text('SELECT price, date, type FROM transactions ORDER BY date ASC')).fetchall()
     transactions_df = pd.DataFrame(transactions_query, columns=['price', 'date', 'type'])
+
     print(transactions_df.head(10))
 
-    balance = 1000 # Initialisation of the starting balance.
+
+    balance = 1000
 
     updated_balances = []
+
     for date, group in transactions_df.groupby('date'):
         for _, row in group.iterrows():
             if row['type'] == 'Buy':
@@ -106,9 +109,15 @@ def main():
         updated_balances.append(balance)
 
     balanced_df = pd.DataFrame({'date': transactions_df['date'].unique(), 'balance': updated_balances})
+
+    first_date = transactions_df['date'].min()
+    starting_date = first_date - pd.Timedelta(days=1)
+    starting_balance_df = pd.DataFrame({'date': [starting_date], 'balance': [1000]})
+    balanced_df = pd.concat([starting_balance_df, balanced_df]).reset_index(drop=True)
+
     print(balanced_df)
 
-    fig = px.line(balanced_df, x='date', y='balance', range_x=(balanced_df['date'].min(), pd.Timestamp.now()))
+    fig = px.line(balanced_df, x='date', y='balance', range_x=(balanced_df['date'].min(), pd.Timestamp.now()), line_shape = 'hv')
     fig.show()
 
     conn.close
