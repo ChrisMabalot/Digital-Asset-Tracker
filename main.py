@@ -1,9 +1,10 @@
-from sqlalchemy import create_engine, Column, Date, DateTime, Float, ForeignKey, Integer, String, Numeric, inspect
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, Column, Date, DateTime, Float, ForeignKey, Integer, String, Numeric, inspect, text
+# from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy_utils import database_exists, create_database
 from local_settings import postgresql as settings
 
+import pandas as pd
 import plotly.express as ps
 
 Base = declarative_base()
@@ -50,8 +51,7 @@ def get_engine_from_settings():
     settings['pgdb']
     )
 
-def get_session():
-    engine = get_engine_from_settings()
+def get_session(engine):
     session = sessionmaker(bind = engine)()
     return session
 
@@ -74,33 +74,34 @@ def sell_nft(session, nft_id, sale_price, sale_date):
 
 def main():
     engine = get_engine_from_settings()
-    session = get_session()
+    session = get_session(engine)
 
     inspector = inspect(engine)
     if not inspector.has_table(Nft.__tablename__) or not inspector.has_table(SoldNft.__tablename__):
         Base.metadata.create_all(engine)
 
-    # add_nft(session, 'TEST2', 'ASSET_TEST2', 150, '2023-02-23')
-    # sell_nft(session, 1, 150, '2023-02-20')
-
-    nfts = session.query(Nft).all()
-    sold_nfts = session.query(SoldNft).all()
-
-    if len(nfts):
-        print("Held NFT's:")
-        for nft in nfts:
-            print(nft.purchase_date, nft.project, nft.asset, nft.purchase_price)
-            print('')
-    else:
-        print("No NFT's currently held.")
-        print('')
+    # add_nft(session, 'TEST1', 'ASSET_TEST1', 150, '2023-02-23')
+    # add_nft(session, 'TEST2', 'ASSET_TEST2', 250, '2023-02-23')
+    # add_nft(session, 'TEST3', 'ASSET_TEST3', 50, '2023-02-23')
+    # add_nft(session, 'TEST4', 'ASSET_TEST4', 50.5, '2023-02-23')
     
-    if len(sold_nfts):
-        print("Sold NFT's")
-        for nft in sold_nfts:
-            print(nft.sale_date, nft.project, nft.asset, nft.purchase_price, nft.sale_price, nft.net_return)
-    else:
-        print("No NFT's have been sold.")
+    # sell_nft(session, 1, 300, '2023-02-20')
+    # sell_nft(session, 3, 25, '2023-02-20')
+
+    conn = engine.connect()
+
+    nfts_result = conn.execute(text('SELECT * FROM nfts;')).fetchall()
+    sold_nfts_result = conn.execute(text('SELECT * FROM sold_nfts;')).fetchall()
+
+    nfts_df = pd.DataFrame(nfts_result, columns=['id', 'project', 'asset', 'purchase_price', 'purchase_date'])
+    sold_nfts_df = pd.DataFrame(sold_nfts_result, columns=['id', 'project', 'asset', 'purchase_price', 'sale_price', 'sale_date', 'net_return'])
+    
+    print(nfts_df.head())
+    print(sold_nfts_df.head())
+
+    conn.close
+
+    
 
 if __name__ == '__main__':
     main()
